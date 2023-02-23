@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>task2</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- JQUERY module newest -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <!-- JQUERY module suggested by table2csv-->
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> -->
+    <!-- XLSX module -->
+    <!-- <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
+    <!-- table2csv module -->
+    <script src="./table2csv.min.js"></script>
+    <!-- Module -->
+    <script src="https://unpkg.com/read-excel-file@5.x/bundle/read-excel-file.min.js"></script>
+    
+
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Task 2 - internship</a>
+            <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample07" aria-controls="navbarsExample07" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button> -->
+    
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Help</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+      
+    <section class="py-5 text-center container-fluid bg-primary bg-gradient">
+        <div class="row py-lg-5">
+            <div class="col-lg-6 col-md-8 mx-auto">
+                <h1 class="fw-light">Screening Tools (Task 2)</h1>
+                <div class="mx-auto">
+                    <label for="input" class="form-label lead">Please upload the file contains namelist below..</label>
+                    <input id="input" class="form-control border border-2 border-success" type="file" accept=".xls,.xlsx,.csv">
+                </div>
+
+                <p name="json-data" id="json-data" rows="10" style="width: 100%;"></p>
+                <div id="exportBtn">
+                    <a type="button" class="btn btn-outline-light" href="./Template-input_data.xlsx">Download input template</a>
+                </div>
+                <!-- <button id="dl-json">Export JSON file</button>
+                <button onclick="exportFinal(dataArray)" id="downloadResult">Export to Excel</button>
+                <button type="button" class="btn btn-outline-dark" id="btnTable" onclick="exportTable('xlsx', 'output_excel')">Export to xlsx</button> -->
+            </div>
+        </div>
+    </section>
+
+    <div class="container-fluid">
+        <table id="tbl-data" class="table table-dark table-striped table-hover"></table>
+    </div>
+
+    <!-- <script>
+        let options = {
+            "separator": ",",
+            "filename": "Company Clickable-Result.csv"
+        }
+        $('#downloadResult').on('click', function() {
+            $('#tbl-data').table2csv(options);
+            $('data-table').XLSX.writeFile(newWB,'New data file.xlsx')
+        })
+    </script> -->
+    <script>
+        // INPUT EXCEL TO JSON
+        let input = document.getElementById('input');
+        input.addEventListener('change', function() {
+            readXlsxFile(input.files[0]).then(function(data) {
+                let i = 0;
+                let headers = [];
+                let json_object = [];
+
+                data.map((row, index)=> {
+                    if (i == 0) {
+                        headers = row;
+                    } //Inputting KEY
+
+                    if (i > 0) {
+                        let temp = {};
+                        for(let x = 0; x < row.length; x++) {
+                            temp[headers[x]] =row[x];
+                        }
+                        json_object.push(temp);
+                    } //Inputting VALUE
+                    i++;
+                });
+            
+                // document.getElementById('json-data').value = JSON.stringify(json_object, null, 2);
+                // console.log(json_object);
+                
+                let dataArray = [];
+                for (const x in json_object) {
+                    dataArray = {...json_object};
+                    let Gquery = dataArray[x].NAME.replaceAll(' ', '+');;
+                    let link = 'https://www.google.com/search?q='+ Gquery +'&source=lnms&tbm=isch';
+                    json_object[x].link = link;
+                }
+                document.getElementById('json-data').value = JSON.stringify(dataArray, null, 2);
+                // console.log(dataArray);
+                // console.log(dataArray[0].NAME.length);
+                buildTable(dataArray)
+
+                // let dataArray = [json_object];
+                // function buildTable(data) {
+                //     const table = document.getElementById('tbl-data');
+                //     let nameLink = '';
+                //     for (const x in data) {
+                //         nameLink += data[x].NAME + ', ';
+                //         // const row = "<tr>
+                //         //                 <td>${data}</td>
+                //         //             </tr>";
+                //     console.log(nameLink);
+                //     }
+                // }
+                // buildTable(dataArray);
+
+                // MAKE EXPORT BUTTONS
+                const mainBtns = document.getElementById('exportBtn');
+                mainBtns.innerHTML += `
+                <button id="dl-json" class="btn btn-outline-dark">Export Result to JSON</button>
+                <!-- <button id="downloadResult" class="btn btn-outline-dark" onclick="exportFinal(dataArray)">Export to Excel</button> -->
+                <button id="btnTable" class="btn btn-outline-dark" onclick="exportTable('xlsx', 'output_excel')">Export Result to Excel</button>
+                `;
+
+                // JSON to HTML TABLE
+                // let myArray = dataArray;
+                // buildTable(myArray)
+                function buildTable(data){
+                    let table = document.getElementById('tbl-data');
+                    table.innerHTML += `<th>NAME</th>
+                                        <th>LINK</th>
+                                       `
+                    let keyName = '';
+                    for (const i in dataArray){
+                        keyName += i + ', ';
+                        let row = ` <td>${data[i].NAME}</td>
+                                    <td><a href="${data[i].link}" target="_blank">${data[i].link}</a></td>
+                                  `
+                        table.innerHTML += row
+                        // console.log('keyName' + keyName);
+                    }
+                }
+
+            });
+        })
+
+        // Export JSON result to Excel using xlsx (NOT work)
+        function exportFinal(jsonObject) {
+            filename='companies_clickable.xlsx';
+            jsonObjectt = JSON.parse(jsonObject);
+            let ws = XLSX.utils.json_to_sheet(jsonObjectt);
+            let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "People");
+            XLSX.writeFile(wb,filename);
+        }
+
+        // Datatable to excel (WORK)
+        function exportTable(fileExtension, fileName) {
+            let elt = document.getElementById('tbl-data');
+            let wb = XLSX.utils.table_to_book(elt, {sheet: "sheet1"});
+            return XLSX.writeFile(wb, fileName + "." + fileExtension || ('MySheetName' + (fileExtension || 'xlsx')));
+        }
+        // END of Datatable
+        
+        document.getElementById('dl-json').onclick = function() {
+            let json_string = document.getElementById('json-data').value;
+            downloadObjectAsJson(json_string, 'json_output'); // output filename, json data to file
+        };
+
+        function downloadObjectAsJson(str, filename) {
+            let data_string = "data:text/json;charset=utf-8," + encodeURIComponent(str);
+            let anchor = document.createElement('a');
+            anchor.setAttribute('href', data_string);
+            anchor.setAttribute('download', filename + '.json');
+            document.body.appendChild(anchor);  //required for firefox
+            anchor.click();
+            anchor.remove();
+        }
+        // https://www.youtube.com/watch?v=5UkeEmG4hlw
+    </script>
+
+    <!-- Script modules -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</body>
+</html>
