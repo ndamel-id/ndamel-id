@@ -1,4 +1,5 @@
 ### Hi there 👋
+This web intended for documentation keeping and sharing with others.
 
 <!--
 **ndamel-id/ndamel-id** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
